@@ -108,7 +108,11 @@ Used by
 
 
 #### Gradle
-    compile 'org.redisson:redisson:3.11.4'  
+    compile 'org.redisson:redisson:3.11.4'
+    
+
+#### Sbt
+    libraryDependencies += "org.redisson" % "redisson" % "3.11.4"
 
 #### Java
 
