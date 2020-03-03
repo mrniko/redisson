@@ -47,6 +47,7 @@ public class RedisClientConfig {
     private int commandTimeout = 10000;
     
     private String password;
+    private TlsVersion tlsVersion;
     private int database;
     private String clientName;
     private boolean readOnly;
@@ -78,6 +79,7 @@ public class RedisClientConfig {
         this.connectTimeout = config.connectTimeout;
         this.commandTimeout = config.commandTimeout;
         this.password = config.password;
+        this.tlsVersion = config.tlsVersion;
         this.database = config.database;
         this.clientName = config.clientName;
         this.readOnly = config.readOnly;
@@ -231,6 +233,15 @@ public class RedisClientConfig {
         this.password = password;
         return this;
     }
+
+    public TlsVersion getTlsVersion() {
+        return tlsVersion;
+    }
+
+    public RedisClientConfig setTlsVersion(TlsVersion tlsVersion) {
+        this.tlsVersion = tlsVersion;
+        return this;
+    }
     
     public int getDatabase() {
         return database;
@@ -303,7 +314,21 @@ public class RedisClientConfig {
         this.resolverGroup = resolverGroup;
         return this;
     }
-    
-    
+
+    public enum TlsVersion {
+        TLSv0("TLSv1"),
+        TLSv1("TLSv1.1"),
+        TLSv2("TLSv1.2");
+
+        private String tlsVersion;
+
+        public String getTlsVersion() {
+            return this.tlsVersion;
+        }
+
+        TlsVersion(String tlsVersion) {
+            this.tlsVersion = tlsVersion;
+        }
+    }
     
 }

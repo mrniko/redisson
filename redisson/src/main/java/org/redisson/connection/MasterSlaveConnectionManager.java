@@ -413,6 +413,7 @@ public class MasterSlaveConnectionManager implements ConnectionManager {
         c.setTimeout(cfg.getTimeout());
         c.setPingTimeout(cfg.getPingTimeout());
         c.setLoadBalancer(cfg.getLoadBalancer());
+        c.setTlsVersion(cfg.getTlsVersion());
         c.setPassword(cfg.getPassword());
         c.setClientName(cfg.getClientName());
         c.setMasterConnectionPoolSize(cfg.getMasterConnectionPoolSize());
@@ -483,8 +484,10 @@ public class MasterSlaveConnectionManager implements ConnectionManager {
               .setPingConnectionInterval(config.getPingConnectionInterval())
               .setKeepAlive(config.isKeepAlive())
               .setTcpNoDelay(config.isTcpNoDelay())
-              .setPassword(config.getPassword());
-        
+              .setPassword(config.getPassword())
+              .setTlsVersion(config.getTlsVersion());
+
+
         if (type != NodeType.SENTINEL) {
             redisConfig.setDatabase(config.getDatabase());
         }

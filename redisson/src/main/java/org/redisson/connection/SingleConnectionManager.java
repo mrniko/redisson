@@ -50,6 +50,7 @@ public class SingleConnectionManager extends MasterSlaveConnectionManager {
         newconfig.setTimeout(cfg.getTimeout());
         newconfig.setPingTimeout(cfg.getPingTimeout());
         newconfig.setPassword(cfg.getPassword());
+        newconfig.setTlsVersion(cfg.getTlsVersion());
         newconfig.setDatabase(cfg.getDatabase());
         newconfig.setClientName(cfg.getClientName());
         newconfig.setMasterAddress(cfg.getAddress());

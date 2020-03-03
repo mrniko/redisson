@@ -240,6 +240,9 @@ public class SentinelConnectionManager extends MasterSlaveConnectionManager {
         if (type == NodeType.SENTINEL && !usePassword) {
             result.setPassword(null);
         }
+        if (config.getTlsVersion() != null && !config.getTlsVersion().getTlsVersion().isEmpty()) {
+            result.setTlsVersion(config.getTlsVersion());
+        }
         return result;
     }
 

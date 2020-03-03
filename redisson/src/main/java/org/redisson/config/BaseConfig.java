@@ -19,6 +19,7 @@ import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.redisson.client.RedisClientConfig.TlsVersion;
 
 /**
  * 
@@ -70,6 +71,11 @@ class BaseConfig<T extends BaseConfig<T>> {
     private String password;
 
     /**
+     * TLS version for the client to use in the TLS handshake to instances.
+     */
+    private TlsVersion tlsVersion;
+
+    /**
      * Subscriptions per Redis connection limit
      */
     private int subscriptionsPerConnection = 5;
@@ -102,6 +108,7 @@ class BaseConfig<T extends BaseConfig<T>> {
     }
 
     BaseConfig(T config) {
+        setTlsVersion(config.getTlsVersion());
         setPassword(config.getPassword());
         setSubscriptionsPerConnection(config.getSubscriptionsPerConnection());
         setRetryAttempts(config.getRetryAttempts());
@@ -153,6 +160,23 @@ class BaseConfig<T extends BaseConfig<T>> {
     public String getPassword() {
         return password;
     }
+
+    /**
+     * Version for client to initiate the TLS handsake with.
+     * Default is <code>null</code>
+     *
+     * @param tlsVersion options : TLSv1, TLSv1.1, TLSv1.2
+     * @return config
+     */
+    public T setTlsVersion(TlsVersion tlsVersion) {
+        this.tlsVersion = tlsVersion;
+        return (T) this;
+    }
+
+    public TlsVersion getTlsVersion() {
+        return tlsVersion;
+    }
+
 
     /**
      * Error will be thrown if Redis command can't be sent to Redis server after <code>retryAttempts</code>.
