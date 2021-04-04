@@ -67,7 +67,8 @@ import io.netty.buffer.ByteBuf;
 public class RedissonMapCache<K, V> extends RedissonMap<K, V> implements RMapCache<K, V> {
 
     private EvictionScheduler evictionScheduler;
-    
+    private long defaultTTL = 0;
+
     public RedissonMapCache(EvictionScheduler evictionScheduler, CommandAsyncExecutor commandExecutor,
                             String name, RedissonClient redisson, MapOptions<K, V> options, WriteBehindService writeBehindService) {
         super(commandExecutor, name, redisson, options, writeBehindService);
@@ -527,85 +528,11 @@ public class RedissonMapCache<K, V> extends RedissonMap<K, V> implements RMapCac
 
     @Override
     protected RFuture<V> putOperationAsync(K key, V value) {
-        String name = getName(key);
-        return commandExecutor.evalWriteAsync(name, codec, RedisCommands.EVAL_MAP_VALUE,
-                "local v = redis.call('hget', KEYS[1], ARGV[2]);" +
-                "local exists = false;" +
-                "if v ~= false then" +
-                "    local t, val = struct.unpack('dLc0', v);" +
-                "    local expireDate = 92233720368547758;" +
-                "    local expireDateScore = redis.call('zscore', KEYS[2], ARGV[2]);" +
-                "    if expireDateScore ~= false then" +
-                "        expireDate = tonumber(expireDateScore)" +
-                "    end;" +
-                "    if t ~= 0 then" +
-                "        local expireIdle = redis.call('zscore', KEYS[3], ARGV[2]);" +
-                "        if expireIdle ~= false then" +
-                "            expireDate = math.min(expireDate, tonumber(expireIdle))" +
-                "        end;" +
-                "    end;" +
-                "    if expireDate > tonumber(ARGV[1]) then" +
-                "        exists = true;" +
-                "    end;" +
-                "end;" +
-
-                "redis.call('zrem', KEYS[2], ARGV[2]); " +
-                "redis.call('zrem', KEYS[3], ARGV[2]); " +
-
-                "local value = struct.pack('dLc0', 0, string.len(ARGV[3]), ARGV[3]);" +
-                "redis.call('hset', KEYS[1], ARGV[2], value);" +
-                "local currentTime = tonumber(ARGV[1]);" +
-                "local lastAccessTimeSetName = KEYS[6];" +
-                "local maxSize = tonumber(redis.call('hget', KEYS[8], 'max-size'));" +
-                "local mode = redis.call('hget', KEYS[8], 'mode'); " +
-                "if exists == false then" +
-                "    if maxSize ~= nil and maxSize ~= 0 then " +
-                        "if mode == false or mode == 'LRU' then " +
-                            "redis.call('zadd', lastAccessTimeSetName, currentTime, ARGV[2]); " +
-                        "end; " +
-                "        local cacheSize = tonumber(redis.call('hlen', KEYS[1]));" +
-                "        if cacheSize > maxSize then" +
-                "            local lruItems = redis.call('zrange', lastAccessTimeSetName, 0, cacheSize - maxSize - 1);" +
-                "            for index, lruItem in ipairs(lruItems) do" +
-                "                if lruItem and lruItem ~= ARGV[2] then" +
-                "                    local lruItemValue = redis.call('hget', KEYS[1], lruItem);" +
-                "                    redis.call('hdel', KEYS[1], lruItem);" +
-                "                    redis.call('zrem', KEYS[2], lruItem);" +
-                "                    redis.call('zrem', KEYS[3], lruItem);" +
-                "                    redis.call('zrem', lastAccessTimeSetName, lruItem);" +
-                "                    if lruItemValue ~= false then " +
-                    "                    local removedChannelName = KEYS[7];" +
-                                        "local ttl, obj = struct.unpack('dLc0', lruItemValue);" +
-                    "                    local msg = struct.pack('Lc0Lc0', string.len(lruItem), lruItem, string.len(obj), obj);" +
-                    "                    redis.call('publish', removedChannelName, msg);" +
-                                    "end; " +
-                "                end;" +
-                "            end" +
-                "        end;" +
-                        "if mode == 'LFU' then " +
-                            "redis.call('zincrby', lastAccessTimeSetName, 1, ARGV[2]); " +
-                        "end; " +
-                "    end;" +
-                "    local msg = struct.pack('Lc0Lc0', string.len(ARGV[2]), ARGV[2], string.len(ARGV[3]), ARGV[3]);" +
-                "    redis.call('publish', KEYS[4], msg);" +
-                "    return nil;" +
-                "else" +
-                "    if maxSize ~= nil and maxSize ~= 0 then " +
-                        "if mode == false or mode == 'LRU' then " +
-                            "redis.call('zadd', lastAccessTimeSetName, currentTime, ARGV[2]); " +
-                        "else " +
-                            "redis.call('zincrby', lastAccessTimeSetName, 1, ARGV[2]); " +
-                        "end; " +
-                "    end;" +
-                "end;" +
-                "" +
-                "local t, val = struct.unpack('dLc0', v);" +
-                "local msg = struct.pack('Lc0Lc0Lc0', string.len(ARGV[2]), ARGV[2], string.len(ARGV[3]), ARGV[3], string.len(val), val);" +
-                "redis.call('publish', KEYS[5], msg);" +
-                "return val;",
-                Arrays.asList(name, getTimeoutSetName(name), getIdleSetName(name), getCreatedChannelName(name),
-                        getUpdatedChannelName(name), getLastAccessTimeSetName(name), getRemovedChannelName(name), getOptionsName(name)),
-                System.currentTimeMillis(), encodeMapKey(key), encodeMapValue(value));
+        long ttlTimeout = 0;
+        if (defaultTTL > 0) {
+            ttlTimeout = System.currentTimeMillis() + defaultTTL;
+        }
+        return putOperationAsync(key, value, ttlTimeout, 0, 0, 0);
     }
 
     @Override
@@ -1185,7 +1112,13 @@ public class RedissonMapCache<K, V> extends RedissonMap<K, V> implements RMapCac
     public long remainTimeToLive(K key) {
         return get(remainTimeToLiveAsync(key));
     }
-    
+
+    @Override
+    public void setDefaultItemTTL(long ttl, TimeUnit ttlUnit) {
+        Objects.requireNonNull(ttl);
+        defaultTTL = ttlUnit.toMillis(ttl);
+    }
+
     @Override
     public RFuture<Long> remainTimeToLiveAsync(K key) {
         checkKey(key);

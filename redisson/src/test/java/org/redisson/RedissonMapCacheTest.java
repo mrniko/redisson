@@ -1261,5 +1261,53 @@ public class RedissonMapCacheTest extends BaseMapTest {
         map.destroy();
 
     }
+
+    @Test
+    public void testExpireMapItemIfGetFromLoader() throws InterruptedException {
+        Map<String, String> map = new HashMap<>();
+        map.put("1", "11");
+        map.put("2", "22");
+        MapOptions<String, String> options = MapOptions.<String, String>defaults().loader(createMapLoader(map));
+        RMapCache<String, String> cache = redisson.getMapCache("test", options);
+
+        cache.get("1");
+        cache.get("2");
+        Assert.assertEquals(2, cache.size());
+        cache.expire(100, TimeUnit.MILLISECONDS);
+        Thread.sleep(500);
+
+        Assert.assertEquals(0, cache.size());
+        cache.destroy();
+    }
+
+    @Test
+    public void testGetExpiredItemIfGetFromLoader() throws InterruptedException {
+        Map<String, String> map = new HashMap<>();
+        map.put("1", "11");
+        map.put("2", "22");
+        MapOptions<String, String> options = MapOptions.<String, String>defaults().loader(createMapLoader(map));
+        RMapCache<String, String> cache = redisson.getMapCache("test", options);
+        cache.setDefaultItemTTL(100, TimeUnit.MILLISECONDS);
+        cache.get("1");
+        cache.get("2");
+        Assert.assertEquals(2, cache.size());
+        map.put("1", "33");
+        Assert.assertEquals("11", cache.get("1"));
+        Thread.sleep(500);
+        Assert.assertEquals("33", cache.get("1"));
+        cache.destroy();
+    }
+
+    @Test
+    public void testGetItemAfterExpiredDefaultTTL() throws InterruptedException {
+        RMapCache<String, String> cache = redisson.getMapCache("test");
+        cache.setDefaultItemTTL(100, TimeUnit.MILLISECONDS);
+        cache.put("1", "11");
+        Assert.assertEquals("11", cache.get("1"));
+        Thread.sleep(500);
+        Assert.assertNull(cache.get("1"));
+        cache.destroy();
+    }
+
 }
 

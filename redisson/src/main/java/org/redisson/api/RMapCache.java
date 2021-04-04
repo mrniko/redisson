@@ -319,5 +319,14 @@ public interface RMapCache<K, V> extends RMap<K, V>, RMapCacheAsync<K, V>, RDest
      *          -1 if the key exists but has no associated expire.
      */
     long remainTimeToLive(K key);
-    
+
+
+    /**
+     * Set default time to live of map entry
+     *
+     * @param ttl     time to live
+     * @param ttlUnit time unit
+     */
+    void setDefaultItemTTL(long ttl, TimeUnit ttlUnit);
+
 }
