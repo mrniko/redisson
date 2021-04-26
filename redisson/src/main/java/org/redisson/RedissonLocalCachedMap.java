@@ -87,6 +87,13 @@ public class RedissonLocalCachedMap<K, V> extends RedissonMap<K, V> implements R
                 CacheKey cacheKey = localCacheView.toCacheKey(keyBuf);
                 Object key = codec.getMapKeyDecoder().decode(keyBuf, null);
                 Object value = codec.getMapValueDecoder().decode(valueBuf, null);
+                if(value instanceof RedissonReference){
+                    try{
+                        value = commandExecutor.getObjectBuilder().fromReference((RedissonReference)value);
+                    }catch (ReflectiveOperationException roe){
+                        roe.printStackTrace();
+                    }
+                }
                 cachePut(cacheKey, key, value);
             }
             
@@ -1251,6 +1258,16 @@ public class RedissonLocalCachedMap<K, V> extends RedissonMap<K, V> implements R
     @Override
     public Set<K> cachedKeySet() {
         return localCacheView.cachedKeySet();
+    }
+    
+     @Override
+    public Collection<V> values(){
+        Collection<V> data = cachedValues();
+        if(data.size() > 0){
+            return data;
+        }
+
+        return super.values();
     }
 
     @Override

@@ -349,6 +349,29 @@ public interface RedissonClient {
      * @return LocalCachedMap object
      */
     <K, V> RLocalCachedMap<K, V> getLocalCachedMap(String name, Codec codec, LocalCachedMapOptions<K, V> options);
+    /**
+     * Returns local cached map instance by name.
+     * Configured with default options-object. 
+     * 
+     * @param <K> type of key
+     * @param <V> type of value
+     * @param name - name of object
+     * @param options - local map options
+     * @return LocalCachedMap object
+     */
+    <K, V> RLocalCachedMap<K, V> getLocalCachedMap(String name);
+    /**
+     * Returns local cached map instance by name
+     * using provided codec. Configured with default options-object.
+     * 
+     * @param <K> type of key
+     * @param <V> type of value
+     * @param name - name of object
+     * @param codec - codec for keys and values
+     * @param options - local map options
+     * @return LocalCachedMap object
+     */
+    <K, V> RLocalCachedMap<K, V> getLocalCachedMap(String name, Codec codec);
     
     /**
      * Returns map instance by name.

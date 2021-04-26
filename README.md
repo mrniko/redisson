@@ -1,3 +1,5 @@
+# forked to fix NPE while reading data when RLocalCachedMap is used inside another RLocalCachedMap
+
 # Redisson - Redis Java client<br/>with features of In-Memory Data Grid
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.redisson/redisson/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.redisson/redisson)
 [![JavaDoc](http://www.javadoc.io/badge/org.redisson/redisson.svg)](http://www.javadoc.io/doc/org.redisson/redisson)
