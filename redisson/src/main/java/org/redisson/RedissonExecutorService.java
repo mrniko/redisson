@@ -429,6 +429,8 @@ public class RedissonExecutorService implements RScheduledExecutorService {
                 try {
                     ObjectOutput oo = new ObjectOutputStream(os);
                     oo.writeObject(task);
+                    oo.flush();
+                    oo.close();
                 } catch (Exception e) {
                     throw new IllegalArgumentException("Unable to serialize lambda", e);
                 }
