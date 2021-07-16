@@ -253,12 +253,12 @@ public class RedissonBucket<V> extends RedissonExpirable implements RBucket<V> {
     }
 
     @Override
-    public int addListener(ObjectListener listener) {
+    public int addListener(ObjectListener listener, Integer previous) {
         if (listener instanceof SetObjectListener) {
-            return addListener("__keyevent@*:set", (SetObjectListener) listener, SetObjectListener::onSet);
+            previous = addListener("__keyevent@*:set", (SetObjectListener) listener, SetObjectListener::onSet, previous);
         }
-        return super.addListener(listener);
-    };
+        return super.addListener(listener, previous);
+    }
 
     @Override
     public RFuture<Integer> addListenerAsync(ObjectListener listener) {

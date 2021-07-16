@@ -379,6 +379,14 @@ public abstract class RedissonObject implements RObject {
         return commandExecutor.writeAsync(getRawName(), StringCodec.INSTANCE, RedisCommands.OBJECT_IDLETIME, getRawName());
     }
 
+    protected final <T extends ObjectListener> int addListener(String name, T listener, BiConsumer<T, String> consumer, Integer previous) {
+        int next = addListener(name, listener, consumer);
+        if (previous != null && previous == next) {
+            return next;
+        }
+        throw new UnsupportedOperationException("Incompatible listener combination");
+    }
+
     protected final <T extends ObjectListener> int addListener(String name, T listener, BiConsumer<T, String> consumer) {
         RPatternTopic topic = new RedissonPatternTopic(StringCodec.INSTANCE, commandExecutor, name);
         return topic.addListener(String.class, (pattern, channel, msg) -> {
@@ -397,16 +405,23 @@ public abstract class RedissonObject implements RObject {
         });
     }
 
-    @Override
-    public int addListener(ObjectListener listener) {
+    public int addListener(ObjectListener listener, Integer previous) {
         if (listener instanceof ExpiredObjectListener) {
-            return addListener("__keyevent@*:expired", (ExpiredObjectListener) listener, ExpiredObjectListener::onExpired);
+            previous = addListener("__keyevent@*:expired", (ExpiredObjectListener) listener, ExpiredObjectListener::onExpired, previous);
         }
         if (listener instanceof DeletedObjectListener) {
-            return addListener("__keyevent@*:del", (DeletedObjectListener) listener, DeletedObjectListener::onDeleted);
+            previous = addListener("__keyevent@*:del", (DeletedObjectListener) listener, DeletedObjectListener::onDeleted, previous);
         }
-        throw new IllegalArgumentException();
-    };
+        if (previous == null) {
+            throw new IllegalArgumentException();
+        }
+        return previous;
+    }
+
+    @Override
+    public int addListener(ObjectListener listener) {
+        return addListener(listener, null);
+    }
     
     @Override
     public RFuture<Integer> addListenerAsync(ObjectListener listener) {

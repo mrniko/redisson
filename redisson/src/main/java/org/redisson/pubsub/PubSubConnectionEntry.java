@@ -118,13 +118,14 @@ public class PubSubConnectionEntry {
     
     public boolean removeListener(ChannelName channelName, int listenerId) {
         Queue<RedisPubSubListener<?>> listeners = channelListeners.get(channelName);
+        boolean removed = false;
         for (RedisPubSubListener<?> listener : listeners) {
             if (System.identityHashCode(listener) == listenerId) {
                 removeListener(channelName, listener);
-                return true;
+                removed = true;
             }
         }
-        return false;
+        return removed;
     }
 
     public void removeListener(ChannelName channelName, RedisPubSubListener<?> listener) {

@@ -1446,12 +1446,12 @@ public class RedissonScoredSortedSet<V> extends RedissonExpirable implements RSc
     }
 
     @Override
-    public int addListener(ObjectListener listener) {
+    public int addListener(ObjectListener listener, Integer previous) {
         if (listener instanceof ScoredSortedSetAddListener) {
-            return addListener("__keyevent@*:zadd", (ScoredSortedSetAddListener) listener, ScoredSortedSetAddListener::onAdd);
+            previous = addListener("__keyevent@*:zadd", (ScoredSortedSetAddListener) listener, ScoredSortedSetAddListener::onAdd, previous);
         }
-        return super.addListener(listener);
-    };
+        return super.addListener(listener, previous);
+    }
 
     @Override
     public RFuture<Integer> addListenerAsync(ObjectListener listener) {

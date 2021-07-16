@@ -854,24 +854,24 @@ public class RedissonList<V> extends RedissonExpirable implements RList<V> {
     }
 
     @Override
-    public int addListener(ObjectListener listener) {
+    public int addListener(ObjectListener listener, Integer previous) {
         if (listener instanceof ListAddListener) {
-            return addListener("__keyevent@*:rpush", (ListAddListener) listener, ListAddListener::onListAdd);
+            previous = addListener("__keyevent@*:rpush", (ListAddListener) listener, ListAddListener::onListAdd, previous);
         }
         if (listener instanceof ListRemoveListener) {
-            return addListener("__keyevent@*:lrem", (ListRemoveListener) listener, ListRemoveListener::onListRemove);
+            previous = addListener("__keyevent@*:lrem", (ListRemoveListener) listener, ListRemoveListener::onListRemove, previous);
         }
         if (listener instanceof ListTrimListener) {
-            return addListener("__keyevent@*:ltrim", (ListTrimListener) listener, ListTrimListener::onListTrim);
+            previous = addListener("__keyevent@*:ltrim", (ListTrimListener) listener, ListTrimListener::onListTrim, previous);
         }
         if (listener instanceof ListSetListener) {
-            return addListener("__keyevent@*:lset", (ListSetListener) listener, ListSetListener::onListSet);
+            previous = addListener("__keyevent@*:lset", (ListSetListener) listener, ListSetListener::onListSet, previous);
         }
         if (listener instanceof ListInsertListener) {
-            return addListener("__keyevent@*:linsert", (ListInsertListener) listener, ListInsertListener::onListInsert);
+            previous = addListener("__keyevent@*:linsert", (ListInsertListener) listener, ListInsertListener::onListInsert, previous);
         }
-        return super.addListener(listener);
-    };
+        return super.addListener(listener, previous);
+    }
 
     @Override
     public RFuture<Integer> addListenerAsync(ObjectListener listener) {
