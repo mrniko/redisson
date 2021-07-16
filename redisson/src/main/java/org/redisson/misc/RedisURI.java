@@ -88,12 +88,18 @@ public class RedisURI {
     }
     
     public static boolean compare(InetSocketAddress entryAddr, RedisURI addr) {
-        if (((entryAddr.getHostName() != null && entryAddr.getHostName().equals(trimIpv6Brackets(addr.getHost())))
-                || entryAddr.getAddress().getHostAddress().equals(trimIpv6Brackets(addr.getHost())))
-                && entryAddr.getPort() == addr.getPort()) {
-            return true;
+        if (entryAddr == null || addr == null || addr.getHost() == null) {
+            return false;
         }
-        return false;
+
+        boolean matchesHostName = entryAddr.getHostName() != null
+                && entryAddr.getHostName().equals(trimIpv6Brackets(addr.getHost()));
+
+        boolean matchesHostAddress = entryAddr.getAddress() != null
+                && entryAddr.getAddress().getHostAddress() != null
+                && entryAddr.getAddress().getHostAddress().equals(trimIpv6Brackets(addr.getHost()));
+
+        return (matchesHostName || matchesHostAddress) && entryAddr.getPort() == addr.getPort();
     }
 
     @Override
