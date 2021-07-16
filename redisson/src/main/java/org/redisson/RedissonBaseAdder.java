@@ -39,7 +39,7 @@ import java.util.function.BiConsumer;
  */
 public abstract class RedissonBaseAdder<T extends Number> extends RedissonExpirable {
 
-    private class ResetListener implements BiConsumer<Long, Throwable> {
+    private static class ResetListener implements BiConsumer<Long, Throwable> {
         
         private final RPromise<Void> result;
         private final RSemaphore semaphore;
@@ -267,6 +267,21 @@ public abstract class RedissonBaseAdder<T extends Number> extends RedissonExpira
         });
         
         return result;
+    }
+
+    @Override
+    public boolean delete() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected RFuture<Boolean> deleteAsync(String... keys) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RFuture<Boolean> deleteAsync() {
+        throw new UnsupportedOperationException();
     }
 
     public void destroy() {
