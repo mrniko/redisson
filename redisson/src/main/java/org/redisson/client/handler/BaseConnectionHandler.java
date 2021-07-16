@@ -64,7 +64,7 @@ public abstract class BaseConnectionHandler<C extends RedisConnection> extends C
         List<RFuture<Object>> futures = new ArrayList<RFuture<Object>>();
 
         RedisClientConfig config = redisClient.getConfig();
-        if (config.getPassword() != null) {
+        if (config.getPassword() != null && !"".equals(config.getPassword())) {
             RFuture<Object> future;
             if (config.getUsername() != null) {
                 future = connection.async(RedisCommands.AUTH, config.getUsername(), config.getPassword());
