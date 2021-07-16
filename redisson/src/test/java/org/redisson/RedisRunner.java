@@ -206,6 +206,7 @@ public class RedisRunner {
 
     {
         this.options.put(REDIS_OPTIONS.BINARY_PATH, RedissonRuntimeEnvironment.redisBinaryPath);
+        if (!RedissonRuntimeEnvironment.redisPort.isEmpty()) this.options.put(REDIS_OPTIONS.PORT, RedissonRuntimeEnvironment.redisPort);
     }
 
     /**
@@ -1010,7 +1011,12 @@ public class RedisRunner {
     public static RedisRunner.RedisProcess startDefaultRedisServerInstance() throws IOException, InterruptedException, FailedToStartRedisException {
         if (defaultRedisInstance == null) {
             System.out.println("REDIS RUNNER: Starting up default instance...");
-            defaultRedisInstance = new RedisRunner().nosave().randomDir().randomPort().run();
+            RedisRunner runner = new RedisRunner();
+            if (runner.options.getOrDefault(REDIS_OPTIONS.PORT, "").isEmpty()) {
+                defaultRedisInstance = runner.nosave().randomDir().randomPort().run();
+            } else {
+                defaultRedisInstance = runner.nosave().randomDir().port(runner.port).run();
+            }
         }
         return defaultRedisInstance;
     }

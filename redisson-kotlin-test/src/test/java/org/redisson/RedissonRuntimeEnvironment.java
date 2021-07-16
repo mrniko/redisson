@@ -9,17 +9,17 @@ import java.util.regex.Pattern;
  */
 public class RedissonRuntimeEnvironment {
 
-    public static final boolean isTravis = "true".equalsIgnoreCase(System.getProperty("travisEnv"));
-    public static final String redisBinaryPath = System.getProperty("redisBinary", "C:\\redis\\redis-server.exe");
-    public static final String tempDir = System.getProperty("java.io.tmpdir");
-    public static final String OS;
-    public static final boolean isWindows;
-    public static final String redisPort;
+	public static final boolean isTravis = "true".equalsIgnoreCase(System.getProperty("travisEnv"));
+	public static final String redisBinaryPath = System.getProperty("redisBinary", "C:\\redis\\redis-server.exe");
+	public static final String tempDir = System.getProperty("java.io.tmpdir");
+	public static final String OS;
+	public static final boolean isWindows;
+	public static final String redisPort;
 
-    static {
-        OS = System.getProperty("os.name", "generic");
-        isWindows = OS.toLowerCase(Locale.ENGLISH).contains("win");
-        String portString = System.getProperty("redisPort", "");
+	static {
+		OS = System.getProperty("os.name", "generic");
+		isWindows = OS.toLowerCase(Locale.ENGLISH).contains("win");
+		String portString = System.getProperty("redisPort", "");
         Pattern portPattern = Pattern.compile("[1-9]\\d+");
 
         if (portString.isEmpty()) {
@@ -31,5 +31,5 @@ public class RedissonRuntimeEnvironment {
             System.out.println(msg);
             redisPort = "";
         }
-    }
+	}
 }
